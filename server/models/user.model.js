@@ -4,13 +4,16 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema({
     name: {type: String , required: true},
     email: {type:String, required: true, unique:true},
-    password : {type:Number, required:true},
-    verifyOtp: {type: Number, required:true , default: ""},
-    verifyOtpExpireAt : {type:Number,required:true , default:0},
-    resetOtp: {type: Number, required:true , default: ""},
-    verifyResetOtpExpireAt : {type: Number, required:true , default: 0},
+    password : {type:String, required:true},
+    verifyOtp: {type: String, default: ""},
+    verifyOtpExpireAt : {type:Number, default:0},
+    isAccountVerified: {type:Boolean, default:false},
+    resetOtp: {type: String, default: ""},
+    verifyResetOtpExpireAt : {type: Number, default: 0},
 })
 
 const userModel = mongoose.model("mern-auth-cluster", userSchema)
 
-module.exports = userModel;
+module.exports = {
+    userModel
+}
