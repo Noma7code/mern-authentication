@@ -5,6 +5,7 @@ require("dotenv").config()
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/mongodb");
 const { authRouter } = require("./routes/auth.route");
+const { userRouter } = require("./routes/user.route");
 
 const PORT = process.env.PORT
 connectDB()
@@ -20,6 +21,7 @@ app.get("/", (req,res)=> {
     return res.json("API Working")
 })
 app.use("/api/auth",authRouter)
+app.use("/api/user/", userRouter)
 
 
 app.listen(PORT, (err)=> {

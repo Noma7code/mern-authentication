@@ -1,22 +1,26 @@
 const express = require("express")
-const { register, login, logout, sendVerifyOtp, verifyEmail, isAuthenticated } = require("../controllers/auth.controller")
+const { register, login, logout, sendVerifyOtp, verifyEmail, isAuthenticated, sendResetOtp, passwordReset } = require("../controllers/auth.controller")
 const { userAuth } = require("../middlewares/auth.middleware")
 const authRouter = express.Router()
 
 //registration endpoint
 authRouter.post('/register', register)
 
-//login
+//login endpoint
 authRouter.post('/login',login)
 
-//logout
+//logout endpoint
 authRouter.post('/logout',logout)
-//verifyOtp
+//verifyOtp endpoing
 authRouter.post('/send-otp', userAuth , sendVerifyOtp)
-//verifyEmail 
+//verifyEmail endpoint
 authRouter.post('/verify-account', userAuth , verifyEmail)
 //is account authenticated
 authRouter.post('/is-auth', userAuth , isAuthenticated)
+//send resetOtp 
+authRouter.post('/send-resetOtp', sendResetOtp)
+//reset password endpoint
+authRouter.post('/reset-password',passwordReset)
 
 
 module.exports = {

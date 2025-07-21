@@ -111,7 +111,7 @@ async function logout(req,res) {
 //send verification otp to user email
 async function sendVerifyOtp(req,res) {
     try {
-        const  {userId} = req.body
+        const  {userId} = req
 
         const user = await userModel.findById(userId)
 
@@ -121,7 +121,7 @@ async function sendVerifyOtp(req,res) {
 
         const otp = String(Math.floor(100000 + Math.random()*900000))
         user.verifyOtp = otp
-        user.verifyOtpExpireAt = Date.now() + 30 * 60 * 1000
+        user.verifyOtpExpireAt = Date.now() + 30 * 60 * 1000 //30 mins in milliseconds
 
         await user.save()
 
@@ -148,7 +148,8 @@ async function sendVerifyOtp(req,res) {
 //verify account
 async function verifyEmail(req,res) {
 
-    const {userId, otp} = req.body
+    const {otp} = req.body
+    const {userId} = req
     if(!userId || !otp){
         return res.json({success:false, message: "Missing details"})
     }
@@ -191,11 +192,83 @@ async function isAuthenticated(req,res) {
     }
     
 }
+//send reset password otp
+async function sendResetOtp(req,res) {
+    const {email} = req.body    
+    if(!email){
+        return res.json({success:false, message:"Email is required"})
+    }
+    try {
+        const user = await userModel.findOne({email})
+        if(!user){
+            return res.json({success:false, message: "User does not exist"})
+        }
+
+        const otp = String(Math.floor(100000 + Math.random()*900000))
+        user.resetOtp = otp
+        user.verifyResetOtpExpireAt = Date.now() + 30 * 60 * 1000
+
+        await user.save()
+
+        const mailOptions = {
+            from:process.env.SENDER_EMAIL,
+            to:email,
+            subject: "Password reset otp",
+            text: `Please enter the otp ${otp} to confirm your identity to reset your password`
+        }
+
+        await transport.sendMail(mailOptions)
+        res.json({success:true, message: "Password reset otp send  via email"})
+
+        
+    } catch (error) {
+        return res.json({sucess:false, message:error.message})
+        
+    }
+
+
+}
+
+
+//reset user password
+async function passwordReset(req,res) {
+    const {email , otp, newPassword} = req.body
+    if(!email || !otp || !newPassword){
+        return res.json({success:false, message:"Email , otp and newpassword are required"})
+    }
+    try {
+        const user =  await userModel.findOne({email})
+
+        if(!user){
+            return res.json({success:false, message:"User not found"}) 
+        }
+        if(!user.resetOtp === '' || user.resetOtp !== otp){
+            return res.json({success:false, message:"Invalid otp"})
+        }
+        if(user.verifyResetOtpExpireAt < Date.now()){
+            return res.json({success:false, message:"Otp expired"})
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        user.password =hashedPassword
+        user.resetOtp = ''
+        user.verifyResetOtpExpireAt = 0
+
+        await user.save()
+        res.json({success:true, message:"Password is successfully reset"})
+        
+    } catch (error) {
+        
+    }   
+}
+
 module.exports = {
     register,
     login,
     logout,
     sendVerifyOtp,
     verifyEmail,
-    isAuthenticated
+    isAuthenticated,
+    sendResetOtp,
+    passwordReset
 }
