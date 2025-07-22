@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -8,6 +11,45 @@ export default function Login() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const { backendUrl, setIsLoggedIn, getUserData } = useContext(AppContext);
+
+  const handleSubmit = async (e) => {
+    try {
+      e.preventDefault();
+      // data is sent as cookies
+      axios.defaults.withCredentials = true;
+
+      if (state === "Sign up") {
+        const { data } = axios.post(backendUrl + "/api/auth/register", {
+          name,
+          email,
+          password,
+        });
+        if (data.success) {
+          setIsLoggedIn(true);
+          getUserData();
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      } else {
+        const { data } = await axios.post(backendUrl + "/api/auth/login", {
+          email,
+          password,
+        });
+        if (data.success) {
+          setIsLoggedIn(true);
+          getUserData();
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error);
+    }
+  };
 
   return (
     <div
@@ -32,7 +74,7 @@ export default function Login() {
             : "Login into your acccount"}
         </p>
         {/* login form */}
-        <form>
+        <form onSubmit={handleSubmit}>
           {/* name */}
           {state === "Sign up" && (
             <div className="flex gap-4 border rounded-2xl mb-4 items-center px-3 py-2 bg-[#333A5C] text-white">
@@ -54,7 +96,7 @@ export default function Login() {
             <input
               onChange={(e) => setEmail(e.target.value)}
               value={email}
-              type="text"
+              type="email"
               placeholder="email id"
               name="emailId"
               required
@@ -67,7 +109,7 @@ export default function Login() {
             <input
               onChange={(e) => setPassword(e.target.value)}
               value={password}
-              type="text"
+              type="password"
               placeholder="password"
               name="password"
               required
