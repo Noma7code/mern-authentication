@@ -3,6 +3,10 @@ const { userModel } = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { transport } = require("../config/nodemailer");
+const {
+  EMAIL_VERIFY_TEMPLATE,
+  PASSWORD_RESET_TEMPLATE,
+} = require("../config/emailTemplates");
 
 //controller func to register user
 async function register(req, res) {
@@ -128,7 +132,11 @@ async function sendVerifyOtp(req, res) {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Account Verification Otp",
-      text: `Your account verification code is ${otp}. This otp last for 30 minutes`,
+      // text: `Your account verification code is ${otp}. This otp last for 30 minutes`,
+      html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace(
+        "{{email}}",
+        user.email
+      ),
     };
 
     await transport.sendMail(mailOptions);
@@ -192,7 +200,7 @@ async function sendResetOtp(req, res) {
 
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     user.resetOtp = otp;
-    user.verifyResetOtpExpireAt = Date.now() + 30 * 60 * 1000;
+    user.verifyResetOtpExpireAt = Date.now() + 10 * 60 * 1000;
 
     await user.save();
 
@@ -200,7 +208,11 @@ async function sendResetOtp(req, res) {
       from: process.env.SENDER_EMAIL,
       to: email,
       subject: "Password reset otp",
-      text: `Please enter the otp ${otp} to confirm your identity to reset your password`,
+      // text: `Please enter the otp ${otp} to confirm your identity to reset your password`,
+      html: PASSWORD_RESET_TEMPLATE.replace("{{email}}", email).replace(
+        "{{otp}}",
+        otp
+      ),
     };
 
     await transport.sendMail(mailOptions);
