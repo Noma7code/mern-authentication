@@ -225,7 +225,7 @@ async function passwordReset(req, res) {
     if (!user) {
       return res.json({ success: false, message: "User not found" });
     }
-    if (!user.resetOtp === "" || user.resetOtp !== otp) {
+    if (user.resetOtp === "" || user.resetOtp !== otp) {
       return res.json({ success: false, message: "Invalid otp" });
     }
     if (user.verifyResetOtpExpireAt < Date.now()) {
@@ -239,7 +239,9 @@ async function passwordReset(req, res) {
 
     await user.save();
     res.json({ success: true, message: "Password is successfully reset" });
-  } catch (error) {}
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
 }
 
 module.exports = {

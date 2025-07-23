@@ -28,7 +28,7 @@ export default function EmailVerify() {
   };
   //handle paste functionality
   const handlePaste = (e) => {
-    const paste = e.clipBoardData.getData("text");
+    const paste = e.clipboardData.getData("text");
     const pasteArray = paste.split("");
     pasteArray.forEach((char, index) => {
       if (inputRef.current[index]) {
@@ -40,17 +40,22 @@ export default function EmailVerify() {
   const handleSubmit = async (e) => {
     try {
       e.preventDefault();
+      const otpArray = inputRef.current.map((e) => e.value);
+      const otp = otpArray.join("");
       const { data } = await axios.post(
-        backendUrl + "/api/auth/verify-account"
+        backendUrl + "/api/auth/verify-account",
+        { otp }
       );
       if (data.success) {
         toast.success(data.message);
         getUserData();
         navigate("/");
       } else {
-        toast.error(error.message);
+        toast.error(data.message);
       }
-    } catch (error) {}
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   //verified account should not have access to verify email page

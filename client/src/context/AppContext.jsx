@@ -33,8 +33,8 @@ export const AppContextProvider = (props) => {
   };
 
   useEffect(() => {
-    getAuthState(), [];
-  });
+    getAuthState();
+  }, []);
   const value = {
     backendUrl,
     isLoggedIn,
