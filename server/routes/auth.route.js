@@ -21,7 +21,7 @@ authRouter.post("/login", login);
 //logout endpoint
 authRouter.post("/logout", logout);
 //verifyOtp endpoing
-authRouter.post("/send-otp", userAuth, sendVerifyOtp);
+authRouter.get("/send-otp", userAuth, sendVerifyOtp);
 //verifyEmail endpoint
 authRouter.post("/verify-account", userAuth, verifyEmail);
 //is account authenticated

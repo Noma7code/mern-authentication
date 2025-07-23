@@ -2,11 +2,38 @@ import React, { useContext } from "react";
 import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const { backendUrl, userData, setUserData, setIsLoggedIn } =
     useContext(AppContext);
+
+  const sendVerificationOtp = async () => {
+    try {
+      axios.defaults.withCredentials = true;
+      const { data } = await axios.get(backendUrl + "/api/auth/send-otp");
+      if (data.success) {
+        navigate("/verify-email");
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const { data } = await axios.post(backendUrl + "/api/auth/logout");
+      data.success && setIsLoggedIn(false);
+      data.success && setUserData(false);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
   return (
     <div className="w-full flex justify-between items-center p-4 absolute top-0 sm:p-6">
       <img src={assets.logo} alt="logo" className="w-20 h-20 sm:w-32" />
@@ -21,10 +48,19 @@ export default function Navbar() {
           p-10 text-black z-10 cursor-pointer"
           >
             <ul className="max-w-fit whitespace-nowrap list-none p-2 m-0 bg-gray-100">
-              <li className="py-1 px-2 cursoir-pointer hover:bg-gray-200">
-                Verify Email
-              </li>
-              <li className="py-1 px-2 cursoir-pointer  hover:bg-gray-200 ">
+              {!userData.isAccountVerified && (
+                <li
+                  onClick={sendVerificationOtp}
+                  className="py-1 px-2 cursor-pointer hover:bg-gray-200"
+                >
+                  Verify Email
+                </li>
+              )}
+
+              <li
+                onClick={logout}
+                className="py-1 px-2 cursoir-pointer  hover:bg-gray-200 "
+              >
                 Logout
               </li>
             </ul>
